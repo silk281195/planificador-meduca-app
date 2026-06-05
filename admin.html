@@ -558,29 +558,75 @@ select.filter-select{background:#0A1628;border:1.5px solid var(--border2);border
             </h3>
             <!-- Basic info -->
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;margin-bottom:12px">
-              <div><label class="field-label">Materia *</label><input type="text" id="man-materia" class="field-input" placeholder="Ej: Física"/></div>
-              <div><label class="field-label">Grado *</label><input type="text" id="man-grado" class="field-input" placeholder="Ej: 11"/></div>
+              <!-- Materia: oculto en Inicial, visible en otros -->
+              <div id="man-materia-wrap"><label class="field-label">Materia *</label><input type="text" id="man-materia" class="field-input" placeholder="Ej: Física"/></div>
+              <!-- Grado: selector especial en Inicial -->
+              <div id="man-grado-wrap">
+                <label class="field-label">Grado *</label>
+                <input type="text" id="man-grado" class="field-input" placeholder="Ej: 11"/>
+              </div>
               <div><label class="field-label">Nivel *</label>
-                <select id="man-nivel" class="field-input" style="cursor:pointer">
+                <select id="man-nivel" class="field-input" style="cursor:pointer" onchange="onNivelChange()">
                   <option>Primaria</option><option>Premedia</option><option selected>Media</option><option>Inicial</option>
                 </select>
               </div>
               <div><label class="field-label">Versión</label><input type="text" id="man-version" class="field-input" placeholder="2024"/></div>
             </div>
+            <!-- Selector de programa Inicial (visible solo cuando nivel=Inicial) -->
+            <div id="man-inicial-programa" style="display:none;margin-bottom:12px;background:rgba(5,150,105,.07);border:1.5px solid rgba(5,150,105,.3);border-radius:12px;padding:14px">
+              <div style="font-size:12px;font-weight:700;color:#059669;margin-bottom:10px">🌱 Programa de Educación Inicial</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label class="field-label">Programa *</label>
+                  <select id="man-inicial-tipo" class="field-input" style="cursor:pointer" onchange="onInicialTipoChange()">
+                    <option value="4-5">Educación Inicial — 4 a 5 años (Pre-Kinder)</option>
+                    <option value="5">Educación Inicial — 5 años (Kinder)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="field-label">Dimensión activa</label>
+                  <select id="man-inicial-dim" class="field-input" style="cursor:pointer" onchange="switchInicialDim(this.value)">
+                    <option value="0">1. Afectiva y Socioemocional</option>
+                    <option value="1">2. Procesos Comunicativos</option>
+                    <option value="2">3. Cognoscitiva</option>
+                    <option value="3">4. Psicomotricidad</option>
+                  </select>
+                </div>
+              </div>
+            </div>
             <div style="margin-bottom:16px"><label class="field-label">Título (opcional)</label>
               <input type="text" id="man-titulo" class="field-input" placeholder="Se genera automático si lo dejas vacío"/>
             </div>
-            <!-- Trimestre tabs -->
-            <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px">
-              <button id="man-tab-0" onclick="switchManualTab(0)" style="padding:6px 16px;border-radius:8px;border:none;background:var(--blue);color:white;font-size:12px;font-weight:700;cursor:pointer">I Trimestre</button>
-              <button id="man-tab-1" onclick="switchManualTab(1)" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">II Trimestre</button>
-              <button id="man-tab-2" onclick="switchManualTab(2)" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">III Trimestre</button>
+
+            <!-- ── TABS ESTÁNDAR (Trimestres) — ocultos en Inicial ── -->
+            <div id="man-tabs-estandar">
+              <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <button id="man-tab-0" onclick="switchManualTab(0)" style="padding:6px 16px;border-radius:8px;border:none;background:var(--blue);color:white;font-size:12px;font-weight:700;cursor:pointer">I Trimestre</button>
+                <button id="man-tab-1" onclick="switchManualTab(1)" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">II Trimestre</button>
+                <button id="man-tab-2" onclick="switchManualTab(2)" style="padding:6px 16px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer">III Trimestre</button>
+              </div>
+              <!-- Areas container estándar -->
+              <div id="man-areas-container"></div>
+              <button onclick="addManualArea()" style="width:100%;padding:8px;border:1.5px dashed rgba(139,92,246,.4);background:rgba(139,92,246,.04);color:var(--purple);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px">
+                + Agregar área / unidad temática
+              </button>
             </div>
-            <!-- Areas container -->
-            <div id="man-areas-container"></div>
-            <button onclick="addManualArea()" style="width:100%;padding:8px;border:1.5px dashed rgba(139,92,246,.4);background:rgba(139,92,246,.04);color:var(--purple);border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px">
-              + Agregar área / unidad temática
-            </button>
+
+            <!-- ── FORMULARIO INICIAL (Dimensiones) — visible solo cuando nivel=Inicial ── -->
+            <div id="man-tabs-inicial" style="display:none">
+              <!-- Tabs de dimensiones -->
+              <div style="display:flex;gap:6px;margin-bottom:14px;border-bottom:1px solid var(--border);padding-bottom:10px;flex-wrap:wrap">
+                <button id="man-idim-tab-0" onclick="switchInicialDim(0)" style="padding:6px 14px;border-radius:8px;border:none;background:#059669;color:white;font-size:11px;font-weight:700;cursor:pointer">🟢 Afectiva y Socioemocional</button>
+                <button id="man-idim-tab-1" onclick="switchInicialDim(1)" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer">🟣 Procesos Comunicativos</button>
+                <button id="man-idim-tab-2" onclick="switchInicialDim(2)" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer">🔵 Cognoscitiva</button>
+                <button id="man-idim-tab-3" onclick="switchInicialDim(3)" style="padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer">🟠 Psicomotricidad</button>
+              </div>
+              <!-- Subdimensiones container -->
+              <div id="man-inicial-container"></div>
+              <button onclick="addInicialSubdimension()" style="width:100%;padding:8px;border:1.5px dashed rgba(5,150,105,.4);background:rgba(5,150,105,.04);color:#059669;border-radius:10px;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px">
+                + Agregar subdimensión
+              </button>
+            </div>
             <!-- Save button -->
             <div style="display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
               <button id="man-save-btn" onclick="guardarManual()" class="btn-assign" style="flex:1">
@@ -1150,27 +1196,53 @@ async function editarKB(id) {
     document.getElementById('man-version').value = cia.version || '';
     document.getElementById('man-titulo').value  = data.titulo || '';
 
-    // Load trimestres data into manualTrimestres
-    const trims = cia.trimestres || [];
-    manualTrimestres = [
-      { nombre: 'I Trimestre',   areas: [] },
-      { nombre: 'II Trimestre',  areas: [] },
-      { nombre: 'III Trimestre', areas: [] }
-    ];
-    trims.forEach((t, ti) => {
-      if (ti < 3) {
-        manualTrimestres[ti].nombre = t.nombre || manualTrimestres[ti].nombre;
-        manualTrimestres[ti].areas = (t.areas || []).map(a => ({
-          nombre:          a.nombre || '',
-          objetivos:       (a.objetivos_aprendizaje || []).join('\n'),
-          conceptuales:    (a.contenidos_conceptuales || []).join('\n'),
-          procedimentales: (a.contenidos_procedimentales || []).join('\n'),
-          actitudinales:   (a.contenidos_actitudinales || []).join('\n'),
-          indicadores:     (a.indicadores_logro || []).join('\n'),
-          actividades:     (a.actividades_sugeridas || []).join('\n')
-        }));
-      }
-    });
+    const esInicial = (cia.tipo_programa === 'inicial') || (cia.nivel === 'Inicial') || (data.nivel === 'Inicial');
+
+    if (esInicial) {
+      // Cargar dimensiones
+      resetInicialDims();
+      const dims = cia.dimensiones || [];
+      dims.forEach((d, di) => {
+        if (di < 4) {
+          manualInicialDims[di].nombre = d.nombre || manualInicialDims[di].nombre;
+          manualInicialDims[di].subdimensiones = (d.subdimensiones || []).map(s => ({
+            nombre:          s.nombre || '',
+            objetivo:        s.objetivo || s.objetivo_aprendizaje || '',
+            conceptuales:    (s.contenidos_conceptuales    || []).join('\n'),
+            procedimentales: (s.contenidos_procedimentales || []).join('\n'),
+            actitudinales:   (s.contenidos_actitudinales   || []).join('\n'),
+            indicadores:     (s.indicadores_logro          || []).join('\n'),
+            actividades:     (s.actividades_sugeridas      || []).join('\n')
+          }));
+        }
+      });
+      // Seleccionar programa correcto
+      const progTipo = cia.programa_tipo || (data.grado === 'Kinder' ? '5' : '4-5');
+      document.getElementById('man-inicial-tipo').value = progTipo;
+      manualInicialActiveDim = 0;
+    } else {
+      // Load trimestres data into manualTrimestres
+      const trims = cia.trimestres || [];
+      manualTrimestres = [
+        { nombre: 'I Trimestre',   areas: [] },
+        { nombre: 'II Trimestre',  areas: [] },
+        { nombre: 'III Trimestre', areas: [] }
+      ];
+      trims.forEach((t, ti) => {
+        if (ti < 3) {
+          manualTrimestres[ti].nombre = t.nombre || manualTrimestres[ti].nombre;
+          manualTrimestres[ti].areas = (t.areas || []).map(a => ({
+            nombre:          a.nombre || '',
+            objetivos:       (a.objetivos_aprendizaje || []).join('\n'),
+            conceptuales:    (a.contenidos_conceptuales || []).join('\n'),
+            procedimentales: (a.contenidos_procedimentales || []).join('\n'),
+            actitudinales:   (a.contenidos_actitudinales || []).join('\n'),
+            indicadores:     (a.indicadores_logro || []).join('\n'),
+            actividades:     (a.actividades_sugeridas || []).join('\n')
+          }));
+        }
+      });
+    }
 
     // Set edit mode and open form
     manualEditId = id;
@@ -1179,8 +1251,16 @@ async function editarKB(id) {
     document.getElementById('kb-upload-area').style.display = 'none';
     document.getElementById('man-save-btn').innerHTML = '<i data-lucide="save" style="width:14px;height:14px"></i> Actualizar currículo';
     document.getElementById('man-result').style.display = 'none';
-    updateManualTabs();
-    renderManualAreas();
+
+    // Mostrar formulario correcto
+    onNivelChange();
+    if (esInicial) {
+      updateInicialDimTabs();
+      renderInicialSubdimensiones();
+    } else {
+      updateManualTabs();
+      renderManualAreas();
+    }
     lucide.createIcons();
     document.getElementById('kb-manual-area').scrollIntoView({ behavior: 'smooth' });
     toast('Currículo cargado para edición','ok');
@@ -1310,12 +1390,154 @@ let manualTrimestres = [
 ];
 let manualActiveTab = 0;
 
+// ── INICIAL: estructura de dimensiones ──
+const DIMS_NOMBRES = [
+  'Afectiva y Socioemocional',
+  'Procesos Comunicativos',
+  'Cognoscitiva',
+  'Psicomotricidad'
+];
+let manualInicialDims = DIMS_NOMBRES.map(n => ({ nombre: n, subdimensiones: [] }));
+let manualInicialActiveDim = 0;
+
+function isNivelInicial() {
+  return document.getElementById('man-nivel').value === 'Inicial';
+}
+
+function onNivelChange() {
+  const esInicial = isNivelInicial();
+  // Mostrar/ocultar formularios
+  document.getElementById('man-tabs-estandar').style.display  = esInicial ? 'none' : 'block';
+  document.getElementById('man-tabs-inicial').style.display   = esInicial ? 'block' : 'none';
+  document.getElementById('man-inicial-programa').style.display = esInicial ? 'block' : 'none';
+  // En Inicial: materia y grado se derivan del selector de programa
+  document.getElementById('man-materia-wrap').style.display = esInicial ? 'none' : 'block';
+  document.getElementById('man-grado-wrap').style.display   = esInicial ? 'none' : 'block';
+  if (esInicial) {
+    onInicialTipoChange();
+    renderInicialSubdimensiones();
+    updateInicialDimTabs();
+  }
+}
+
+function onInicialTipoChange() {
+  const tipo = document.getElementById('man-inicial-tipo').value;
+  // Rellenar materia y grado automáticamente
+  if (tipo === '4-5') {
+    document.getElementById('man-materia').value = 'Educación Inicial 4 a 5 años';
+    document.getElementById('man-grado').value   = 'Pre-Kinder';
+  } else {
+    document.getElementById('man-materia').value = 'Educación Inicial 5 años';
+    document.getElementById('man-grado').value   = 'Kinder';
+  }
+}
+
+function switchInicialDim(idx) {
+  saveCurrentInicialSubdims();
+  manualInicialActiveDim = parseInt(idx);
+  document.getElementById('man-inicial-dim').value = manualInicialActiveDim;
+  updateInicialDimTabs();
+  renderInicialSubdimensiones();
+}
+
+function updateInicialDimTabs() {
+  const colors = ['#059669','#8b5cf6','#2563eb','#f97316'];
+  [0,1,2,3].forEach(i => {
+    const btn = document.getElementById('man-idim-tab-'+i);
+    if (!btn) return;
+    const active = i === manualInicialActiveDim;
+    btn.style.background = active ? colors[i] : 'var(--card)';
+    btn.style.color      = active ? 'white' : 'var(--text2)';
+    btn.style.border     = active ? 'none' : '1px solid var(--border)';
+  });
+}
+
+function renderInicialSubdimensiones() {
+  const dim = manualInicialDims[manualInicialActiveDim];
+  const container = document.getElementById('man-inicial-container');
+  const colors = ['#059669','#8b5cf6','#2563eb','#f97316'];
+  const color = colors[manualInicialActiveDim];
+
+  if (!dim.subdimensiones.length) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text3);font-size:12px">
+      Sin subdimensiones. Haz clic en "+ Agregar subdimensión" para comenzar.
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = dim.subdimensiones.map((sub, si) => `
+    <div style="background:var(--bg);border:1.5px solid ${color}30;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="background:${color};color:white;border-radius:6px;padding:2px 10px;font-size:11px;font-weight:700">Subdimensión ${si+1}</span>
+        <input class="field-input" placeholder="Nombre de la subdimensión — Ej: Autonomía" id="man-is${si}-nombre" value="${escHtml(sub.nombre||'')}" style="flex:1;font-weight:600"/>
+        <button onclick="removeInicialSubdim(${si})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:0 4px" title="Eliminar">✕</button>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Objetivo de Aprendizaje</label>
+        <textarea id="man-is${si}-objetivo" class="field-input" rows="2" placeholder="Ej: Reconoce sus características físicas, habilidades y gustos propios…" style="resize:vertical;font-size:12px;line-height:1.5">${escHtml(sub.objetivo||'')}</textarea>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        ${inicialField(si,'conceptuales','Contenidos Conceptuales','Uno por línea…','#3b82f6')}
+        ${inicialField(si,'procedimentales','Contenidos Procedimentales','Uno por línea…','#8b5cf6')}
+        ${inicialField(si,'actitudinales','Contenidos Actitudinales','Uno por línea…','#f59e0b')}
+        ${inicialField(si,'indicadores','Indicadores de Logro','Uno por línea…','#ec4899')}
+        ${inicialField(si,'actividades','Actividades Sugeridas de Evaluación','Uno por línea…','#14b8a6')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function inicialField(si, key, label, ph, color) {
+  const sub = manualInicialDims[manualInicialActiveDim].subdimensiones[si];
+  return `<div>
+    <label style="display:block;font-size:10px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">${label}</label>
+    <textarea id="man-is${si}-${key}" class="field-input" rows="4" placeholder="${ph}" style="resize:vertical;font-size:12px;line-height:1.5">${escHtml(sub?.[key]||'')}</textarea>
+  </div>`;
+}
+
+function saveCurrentInicialSubdims() {
+  const dim = manualInicialDims[manualInicialActiveDim];
+  dim.subdimensiones.forEach((sub, si) => {
+    ['nombre','objetivo','conceptuales','procedimentales','actitudinales','indicadores','actividades'].forEach(key => {
+      const el = document.getElementById(`man-is${si}-${key}`);
+      if (el) sub[key] = el.value;
+    });
+  });
+}
+
+function addInicialSubdimension() {
+  saveCurrentInicialSubdims();
+  manualInicialDims[manualInicialActiveDim].subdimensiones.push({
+    nombre:'', objetivo:'', conceptuales:'', procedimentales:'', actitudinales:'', indicadores:'', actividades:''
+  });
+  renderInicialSubdimensiones();
+}
+
+function removeInicialSubdim(si) {
+  saveCurrentInicialSubdims();
+  manualInicialDims[manualInicialActiveDim].subdimensiones.splice(si, 1);
+  renderInicialSubdimensiones();
+}
+
+function resetInicialDims() {
+  manualInicialDims = DIMS_NOMBRES.map(n => ({ nombre: n, subdimensiones: [] }));
+  manualInicialActiveDim = 0;
+}
+
 function toggleManual() {
   const el = document.getElementById('kb-manual-area');
   const isOpen = el.style.display !== 'none';
   el.style.display = isOpen ? 'none' : 'block'; if(isOpen) manualEditId = null;
   document.getElementById('kb-upload-area').style.display = 'none';
-  if (!isOpen) { manualTrimestres=[{nombre:'I Trimestre',areas:[]},{nombre:'II Trimestre',areas:[]},{nombre:'III Trimestre',areas:[]}]; manualActiveTab=0; renderManualAreas(); updateManualTabs(); lucide.createIcons(); }
+  if (!isOpen) {
+    manualTrimestres=[{nombre:'I Trimestre',areas:[]},{nombre:'II Trimestre',areas:[]},{nombre:'III Trimestre',areas:[]}];
+    manualActiveTab=0;
+    resetInicialDims();
+    // Resetear nivel a Media
+    document.getElementById('man-nivel').value = 'Media';
+    onNivelChange();
+    renderManualAreas(); updateManualTabs(); lucide.createIcons();
+  }
 }
 
 function switchManualTab(idx) {
@@ -1394,7 +1616,14 @@ function removeManualArea(ai) {
 }
 
 async function guardarManual() {
-  saveCurrentTabAreas();
+  const esInicial = isNivelInicial();
+
+  if (esInicial) {
+    saveCurrentInicialSubdims();
+  } else {
+    saveCurrentTabAreas();
+  }
+
   const materia = document.getElementById('man-materia').value.trim();
   const grado   = document.getElementById('man-grado').value.trim();
   const nivel   = document.getElementById('man-nivel').value;
@@ -1402,8 +1631,37 @@ async function guardarManual() {
   const titulo  = document.getElementById('man-titulo').value.trim();
 
   if (!materia || !grado) { toast('Materia y grado son obligatorios','err'); return; }
-  const totalAreas = manualTrimestres.reduce((s,t)=>s+t.areas.filter(a=>a.nombre).length,0);
-  if (totalAreas === 0) { toast('Agrega al menos un área con nombre','err'); return; }
+
+  let payload;
+  if (esInicial) {
+    // Validar que haya al menos una subdimensión con nombre
+    const totalSubs = manualInicialDims.reduce((s,d) => s + d.subdimensiones.filter(s=>s.nombre).length, 0);
+    if (totalSubs === 0) { toast('Agrega al menos una subdimensión con nombre','err'); return; }
+    const tipo = document.getElementById('man-inicial-tipo').value;
+    payload = {
+      materia, grado, nivel, version, titulo,
+      tipo_programa: 'inicial',
+      programa_tipo: tipo, // '4-5' o '5'
+      dimensiones: manualInicialDims.map(d => ({
+        nombre: d.nombre,
+        subdimensiones: d.subdimensiones
+          .filter(s => s.nombre)
+          .map(s => ({
+            nombre: s.nombre,
+            objetivo: s.objetivo,
+            contenidos_conceptuales:     s.conceptuales   ? s.conceptuales.split('\n').map(x=>x.trim()).filter(Boolean) : [],
+            contenidos_procedimentales:  s.procedimentales? s.procedimentales.split('\n').map(x=>x.trim()).filter(Boolean) : [],
+            contenidos_actitudinales:    s.actitudinales  ? s.actitudinales.split('\n').map(x=>x.trim()).filter(Boolean) : [],
+            indicadores_logro:           s.indicadores    ? s.indicadores.split('\n').map(x=>x.trim()).filter(Boolean) : [],
+            actividades_sugeridas:       s.actividades    ? s.actividades.split('\n').map(x=>x.trim()).filter(Boolean) : []
+          }))
+      }))
+    };
+  } else {
+    const totalAreas = manualTrimestres.reduce((s,t)=>s+t.areas.filter(a=>a.nombre).length,0);
+    if (totalAreas === 0) { toast('Agrega al menos un área con nombre','err'); return; }
+    payload = { materia, grado, nivel, version, titulo, trimestres: manualTrimestres };
+  }
 
   const btn = document.getElementById('man-save-btn');
   btn.disabled = true;
@@ -1414,14 +1672,17 @@ async function guardarManual() {
     const r = await fetch(manualEditId ? `${RAILWAY}/api/kb/manual/${manualEditId}` : `${RAILWAY}/api/kb/manual`, {
       method: manualEditId ? 'PUT' : 'POST',
       headers:{'Content-Type':'application/json','x-admin-password':ADMIN_PASS},
-      body: JSON.stringify({ materia, grado, nivel, version, titulo, trimestres: manualTrimestres })
+      body: JSON.stringify(payload)
     });
     const data = await r.json();
     const res = document.getElementById('man-result');
     res.style.display='block';
     if (r.ok && data.ok) {
+      const info = esInicial
+        ? `${data.titulo} — ${data.dimensiones} dimensiones, ${data.total_subdimensiones} subdimensiones`
+        : `${data.titulo} — ${data.trimestres} trimestres, ${data.total_areas} áreas`;
       res.innerHTML=`<div class="gen-key-box"><div style="color:var(--green);font-weight:700;margin-bottom:4px">✅ Currículo guardado exitosamente</div>
-        <div style="font-size:12px;color:var(--text2)">${data.titulo} — ${data.trimestres} trimestres, ${data.total_areas} áreas</div></div>`;
+        <div style="font-size:12px;color:var(--text2)">${info}</div></div>`;
       toast(manualEditId ? '✅ Currículo actualizado' : '✅ Currículo guardado','ok'); manualEditId=null;
       loadKB();
     } else {
